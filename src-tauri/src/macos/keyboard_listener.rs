@@ -17,8 +17,6 @@ unsafe extern "C" fn raw_callback(
     cg_event: CGEventRef,
     _user_info: *mut c_void,
 ) -> CGEventRef {
-    // println!("Event ref {:?}", cg_event_ptr);
-    // let cg_event: CGEvent = transmute_copy::<*mut c_void, CGEvent>(&cg_event_ptr);
     let opt = KEYBOARD_STATE.lock();
     if let Ok(mut keyboard) = opt {
         if let Some(event) = convert(_type, &cg_event, &mut keyboard) {
@@ -27,8 +25,6 @@ unsafe extern "C" fn raw_callback(
             }
         }
     }
-    // println!("Event ref END {:?}", cg_event_ptr);
-    // cg_event_ptr
     cg_event
 }
 
@@ -40,7 +36,7 @@ where
         GLOBAL_CALLBACK = Some(Box::new(callback));
         let _pool = NSAutoreleasePool::new(nil);
         let tap = CGEventTapCreate(
-            CGEventTapLocation::HID, // HID, Session, AnnotatedSession,
+            CGEventTapLocation::HID,
             kCGHeadInsertEventTap,
             CGEventTapOption::ListenOnly,
             kCGEventMaskForAllEvents,
@@ -59,7 +55,6 @@ where
         CFRunLoopAddSource(current_loop, _loop, kCFRunLoopCommonModes);
 
         CGEventTapEnable(tap, true);
-        CFRunLoopRun();
     }
     Ok(())
 }

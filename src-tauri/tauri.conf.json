@@ -44,8 +44,9 @@
         "fullscreen": false,
         "resizable": true,
         "title": "DeezKeys",
-        "width": 800,
-        "height": 600
+        "width": 300,
+        "height": 170,
+        "alwaysOnTop": true
       }
     ]
   }

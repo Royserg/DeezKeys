@@ -14,15 +14,44 @@
   -webkit-text-size-adjust: 100%;
 }
 
-.container {
+html, body {
+  height: 100vh;
+}
+
+*, *::after, *::before {
   margin: 0;
-  padding-top: 10vh;
+  padding: 0;
+}
+
+#root {
+  height: 100%;
+}
+
+.container {
+  height: 100%;
+  margin: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
+
+.row {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row span {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+
+/* ------------- */
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -34,10 +63,6 @@
   filter: drop-shadow(0 0 2em #24c8db);
 }
 
-.row {
-  display: flex;
-  justify-content: center;
-}
 
 a {
   font-weight: 500;

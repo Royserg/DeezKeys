@@ -1,7 +1,7 @@
 use std::thread;
 
 use macos::Event;
-// use rdev::{listen, Event, EventType};
+use serde::Serialize;
 use tauri::{AppHandle, Error, GlobalShortcutManager, Manager};
 
 #[cfg(target_os = "macos")]
@@ -11,69 +11,70 @@ use crate::macos::listen as macos_listen;
 #[cfg(target_os = "macos")]
 use crate::macos::EventType;
 
-// Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+#[derive(Clone, Serialize)]
+struct KeyEventPayload {
+    event_type: String,
+    key: String,
 }
 
-fn macos_callback(event: Event) {
-    println!("My callback {:?}", event);
-    match event.name {
-        Some(string) => {
-            // println!("EventName: {}", &string);
-        }
-        None => {
-            match event.event_type {
-                EventType::KeyPress(key) => {
-                    println!("KeyPress: {:?}", key)
-                }
-                EventType::KeyRelease(key) => {
-                    println!("KeyRelease: {:?}", key)
-                    // let key_str = format!("{:?}", key);
-                    // emit("KeyRelease", &key_str);
-                }
-                _ => {}
+fn macos_callback(event: Event, app: &AppHandle) {
+    match event.event_type {
+        EventType::KeyPress(key) => {
+            // println!("KeyPress: {:?}", key);
+            let key_str = format!("{:?}", key);
+
+            if key_str.eq("CapsLock") {
+                app.emit_all(
+                    "key-event",
+                    KeyEventPayload {
+                        event_type: "KeyPress".to_string(),
+                        key: key_str,
+                    },
+                )
+                .unwrap();
             }
         }
+        EventType::KeyRelease(key) => {
+            // println!("KeyRelease: {:?}", key)
+            let key_str = format!("{:?}", key);
+
+            app.emit_all(
+                "key-event",
+                KeyEventPayload {
+                    event_type: "KeyRelease".to_string(),
+                    key: key_str,
+                },
+            )
+            .unwrap();
+        }
+        _ => {}
     }
 }
 
 fn main() {
-    // let q_shortcut = "Q";
-
     tauri::Builder::default()
         .setup(|app| {
-            // let app_handle = app.app_handle().to_owned();
-            // app_handle.get_window("main").unwrap().close().unwrap();
+            let app_handle = app.app_handle().to_owned();
 
             #[cfg(target_os = "linux")]
             thread::spawn(|| {
-                println!("We are on linux");
+                println!("On linux");
             });
+
+            // #[cfg(target_os = "macos")]
+            // if let Err(error) = macos_listen(macos_callback) {
+            //     println!("Error: {:?}", error);
+            // }
 
             #[cfg(target_os = "macos")]
-            thread::spawn(|| {
-                if let Err(error) = macos_listen(macos_callback) {
-                    println!("Error: {:?}", error);
-                }
-            });
-
-            // app.global_shortcut_manager()
-            //     .register(q_shortcut, move || {
-            //         // TODO: handle possible error
-            //         // open_url_preview(&app_handle);
-            //         println!("Q was PRESSED")
-            //     })
-            //     .unwrap();
-            // rdev key listener
-            // if let Err(error) = listen(callback) {
-            //     println!("Error: {:?}", error)
-            // }
+            if let Err(error) = macos_listen(move |event| {
+                macos_callback(event, &app_handle);
+            }) {
+                println!("Error: {:?}", error);
+            };
 
             Ok(())
         })
-        // .invoke_handler(tauri::generate_handler![greet])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|_app_handle, event| match event {

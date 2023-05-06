@@ -1,44 +1,54 @@
-import { createSignal } from "solid-js";
+import { For, createSignal, onCleanup, onMount } from "solid-js";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
+import { UnlistenFn, listen } from "@tauri-apps/api/event";
 
-// Register shortcuts
-// NOTE: it overrides the native key actions
-// import { registerAll } from "@tauri-apps/api/globalShortcut";
-// await registerAll(
-//   ["CommandOrControl+Shift+C", "Ctrl+Alt+F12", "Z", "G"],
-//   (shortcut) => {
-//     console.log(`Shortcut ${shortcut} triggered`);
-//   }
-// );
+const KEY_EVENT = "key-event";
+interface KeyEvent {
+  id: number;
+  event: string;
+  payload: {
+    event_type: string;
+    key: string;
+  };
+  windowLabel?: string;
+}
 
 function App() {
-  const [greetMsg, setGreetMsg] = createSignal("");
-  const [name, setName] = createSignal("");
+  // TODO: need to check on app init if CapsLock was flipped
+  const [isCapsLockOn, setIsCapsLockOn] = createSignal(false);
+  const [keys, setKeys] = createSignal<string[]>([]);
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name: name() }));
-  }
+  let unlisten: UnlistenFn;
+  onMount(async () => {
+    unlisten = await listen(KEY_EVENT, (event: KeyEvent) => {
+      // console.log("EVENT: ", event);
+      let clickedKey = event.payload.key;
+      // Remove meta words
+      if (clickedKey === "Escape") {
+        clickedKey = "Esc";
+      } else {
+        clickedKey = clickedKey.replace("Key", "").replace("Num", "");
+      }
+
+      const updatedKeys = keys();
+      if (updatedKeys.length > 3) {
+        updatedKeys.pop();
+      }
+
+      setKeys([clickedKey, ...updatedKeys]);
+    });
+  });
+
+  onCleanup(() => {
+    unlisten();
+  });
 
   return (
     <div class="container">
-      <h1>DeezKeys</h1>
-
       <div class="row">
-        <div>
-          <input
-            id="greet-input"
-            onChange={(e) => setName(e.currentTarget.value)}
-            placeholder="Enter a name..."
-          />
-          <button type="button" onClick={() => greet()}>
-            Greet
-          </button>
-        </div>
+        <For each={keys()}>{(item) => <span>{item} &nbsp;</span>}</For>
       </div>
-
-      <p>{greetMsg()}</p>
     </div>
   );
 }
