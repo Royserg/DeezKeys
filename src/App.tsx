@@ -1,13 +1,15 @@
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { For, createSignal, onCleanup, onMount } from "solid-js";
 import "./App.css";
+import { Modifiers } from "./components/modifiers";
+import { useStore } from "@nanostores/solid";
+import {
+  setCapsLockOff,
+  setCapsLockOn,
+  setCapsLockStatus,
+} from "./stores/modifiers";
 
-// --- Move mouse on top of the application window ---
-// `mouseenter` will gets triggered to get status of CapsLock
-import { LogicalPosition, appWindow } from "@tauri-apps/api/window";
-await appWindow.setCursorPosition(new LogicalPosition(50, 50));
-// -----
-
+// TODO: EXTRACT TO INTERFACES
 const KEY_EVENT = "key-event";
 interface KeyEvent {
   id: number;
@@ -20,23 +22,10 @@ interface KeyEvent {
 }
 
 function App() {
-  const body = document.querySelector("body")!;
-
-  const [isCapsLockOn, setIsCapsLockOn] = createSignal(false);
   const [keys, setKeys] = createSignal<string[]>([]);
-
-  const mouseEventHandler = (e: MouseEvent) => {
-    const isCapsLockOn = e.getModifierState("CapsLock");
-    setIsCapsLockOn(isCapsLockOn);
-    body.removeEventListener("mouseenter", mouseEventHandler);
-  };
 
   let unlisten: UnlistenFn;
   onMount(async () => {
-    // Mouse event - Workaround to find Modifier key state (CapsLock)
-    // Should fire one time
-    body.addEventListener("mouseenter", mouseEventHandler);
-
     // TODO: create key mapper -> display icons, strip away meta words
     unlisten = await listen(KEY_EVENT, (event: KeyEvent) => {
       // console.log("EVENT: ", event);
@@ -48,12 +37,13 @@ function App() {
         clickedKey = clickedKey.replace("Key", "").replace("Num", "");
       }
 
+      // Caps
       if (clickedKey === "CapsLock") {
         if (event.payload.event_type === "KeyPress") {
-          setIsCapsLockOn(true);
+          setCapsLockOn();
         }
         if (event.payload.event_type === "KeyRelease") {
-          setIsCapsLockOn(false);
+          setCapsLockOff();
         }
       }
 
@@ -71,8 +61,8 @@ function App() {
   });
 
   return (
-    <div class="container">
-      <div>Caps: {isCapsLockOn() ? "ON" : "OFF"}</div>
+    <div class="container p-1">
+      <Modifiers />
 
       <div class="row">
         <For each={keys()}>
