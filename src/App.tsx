@@ -1,7 +1,12 @@
-import { For, createSignal, onCleanup, onMount } from "solid-js";
-import { invoke } from "@tauri-apps/api/tauri";
-import "./App.css";
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
+import { For, createSignal, onCleanup, onMount } from "solid-js";
+import "./App.css";
+
+// --- Move mouse on top of the application window ---
+// `mouseenter` will gets triggered to get status of CapsLock
+import { LogicalPosition, appWindow } from "@tauri-apps/api/window";
+await appWindow.setCursorPosition(new LogicalPosition(50, 50));
+// -----
 
 const KEY_EVENT = "key-event";
 interface KeyEvent {
