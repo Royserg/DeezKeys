@@ -61,11 +61,6 @@ fn main() {
                 println!("On linux");
             });
 
-            // #[cfg(target_os = "macos")]
-            // if let Err(error) = macos_listen(macos_callback) {
-            //     println!("Error: {:?}", error);
-            // }
-
             #[cfg(target_os = "macos")]
             if let Err(error) = macos_listen(move |event| {
                 macos_callback(event, &app_handle);
@@ -75,6 +70,7 @@ fn main() {
 
             Ok(())
         })
+        // .invoke_handler(tauri::generate_handler![])
         .build(tauri::generate_context!())
         .expect("error while running tauri application")
         .run(|_app_handle, event| match event {

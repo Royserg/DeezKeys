@@ -8,19 +8,31 @@ interface KeyEvent {
   id: number;
   event: string;
   payload: {
-    event_type: string;
+    event_type: "KeyPress" | "KeyRelease";
     key: string;
   };
   windowLabel?: string;
 }
 
 function App() {
-  // TODO: need to check on app init if CapsLock was flipped
+  const body = document.querySelector("body")!;
+
   const [isCapsLockOn, setIsCapsLockOn] = createSignal(false);
   const [keys, setKeys] = createSignal<string[]>([]);
 
+  const mouseEventHandler = (e: MouseEvent) => {
+    const isCapsLockOn = e.getModifierState("CapsLock");
+    setIsCapsLockOn(isCapsLockOn);
+    body.removeEventListener("mouseenter", mouseEventHandler);
+  };
+
   let unlisten: UnlistenFn;
   onMount(async () => {
+    // Mouse event - Workaround to find Modifier key state (CapsLock)
+    // Should fire one time
+    body.addEventListener("mouseenter", mouseEventHandler);
+
+    // TODO: create key mapper -> display icons, strip away meta words
     unlisten = await listen(KEY_EVENT, (event: KeyEvent) => {
       // console.log("EVENT: ", event);
       let clickedKey = event.payload.key;
@@ -29,6 +41,15 @@ function App() {
         clickedKey = "Esc";
       } else {
         clickedKey = clickedKey.replace("Key", "").replace("Num", "");
+      }
+
+      if (clickedKey === "CapsLock") {
+        if (event.payload.event_type === "KeyPress") {
+          setIsCapsLockOn(true);
+        }
+        if (event.payload.event_type === "KeyRelease") {
+          setIsCapsLockOn(false);
+        }
       }
 
       const updatedKeys = keys();
@@ -46,8 +67,14 @@ function App() {
 
   return (
     <div class="container">
+      <div>Caps: {isCapsLockOn() ? "ON" : "OFF"}</div>
+
       <div class="row">
-        <For each={keys()}>{(item) => <span>{item} &nbsp;</span>}</For>
+        <For each={keys()}>
+          {(item, idx) => (
+            <span class={idx() === 0 ? "bigger" : ""}>{item} &nbsp;</span>
+          )}
+        </For>
       </div>
     </div>
   );
