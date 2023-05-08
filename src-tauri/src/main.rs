@@ -1,8 +1,6 @@
-use std::thread;
-
 use macos::Event;
 use serde::Serialize;
-use tauri::{AppHandle, Error, GlobalShortcutManager, Manager};
+use tauri::{AppHandle, Manager};
 
 #[cfg(target_os = "macos")]
 mod macos;
