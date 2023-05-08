@@ -2,12 +2,7 @@ import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { For, createSignal, onCleanup, onMount } from "solid-js";
 import "./App.css";
 import { Modifiers } from "./components/modifiers";
-import { useStore } from "@nanostores/solid";
-import {
-  setCapsLockOff,
-  setCapsLockOn,
-  setCapsLockStatus,
-} from "./stores/modifiers";
+import { setCapsLockStatus } from "./stores/modifiers";
 
 // TODO: EXTRACT TO INTERFACES
 const KEY_EVENT = "key-event";
@@ -40,10 +35,10 @@ function App() {
       // Caps
       if (clickedKey === "CapsLock") {
         if (event.payload.event_type === "KeyPress") {
-          setCapsLockOn();
+          setCapsLockStatus(true);
         }
         if (event.payload.event_type === "KeyRelease") {
-          setCapsLockOff();
+          setCapsLockStatus(false);
         }
       }
 

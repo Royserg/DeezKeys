@@ -1,18 +1,12 @@
 import { action, atom } from "nanostores";
 
+// -- Store
 export const isCapsLockOn = atom<boolean>(false);
-
-// this methods doesn't seem to work - INVESTIGATE
-export const setCapsLockStatus = (val: boolean) => {
-  action(isCapsLockOn, "switch", (store) => {
-    console.log("SETTING NEW CAPS LOCK", val);
+// -- Actions
+export const setCapsLockStatus = action(
+  isCapsLockOn,
+  "switch",
+  (store, val: boolean) => {
     store.set(val);
-  });
-};
-
-export const setCapsLockOn = action(isCapsLockOn, "switchOn", (store) => {
-  store.set(true);
-});
-export const setCapsLockOff = action(isCapsLockOn, "switchOff", (store) => {
-  store.set(false);
-});
+  }
+);

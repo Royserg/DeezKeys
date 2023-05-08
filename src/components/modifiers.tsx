@@ -4,11 +4,7 @@ import { onMount } from "solid-js";
 // `mouseenter` will gets triggered to get status of CapsLock
 import { useStore } from "@nanostores/solid";
 import { LogicalPosition, appWindow } from "@tauri-apps/api/window";
-import {
-  isCapsLockOn,
-  setCapsLockOff,
-  setCapsLockOn,
-} from "../stores/modifiers";
+import { isCapsLockOn, setCapsLockStatus } from "../stores/modifiers";
 await appWindow.setCursorPosition(new LogicalPosition(50, 50));
 
 export const Modifiers = () => {
@@ -20,9 +16,9 @@ export const Modifiers = () => {
     const isCapsLockOn = e.getModifierState("CapsLock");
 
     if (isCapsLockOn) {
-      setCapsLockOn();
+      setCapsLockStatus(true);
     } else {
-      setCapsLockOff();
+      setCapsLockStatus(false);
     }
 
     body.removeEventListener("mouseenter", mouseEventHandler);
