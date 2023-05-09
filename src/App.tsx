@@ -2,59 +2,23 @@ import { UnlistenFn, listen } from "@tauri-apps/api/event";
 import { Component, For, createSignal, onCleanup, onMount } from "solid-js";
 import "./App.css";
 import { Modifiers } from "./components/modifiers";
-import { setCapsLockStatus } from "./stores/modifiers";
-
-// TODO: EXTRACT TO INTERFACES
-const KEY_EVENT = "key-event";
-interface KeyEvent {
-  id: number;
-  event: string;
-  payload: {
-    event_type: "KeyPress" | "KeyRelease";
-    key: string;
-  };
-  windowLabel?: string;
-}
+import { handleClickedKey } from "./services/keys";
+import { KEY_EVENT, KeyEvent } from "./interfaces/key.interface";
 
 function App() {
   const [keys, setKeys] = createSignal<string[]>([]);
 
   let unlisten: UnlistenFn;
   onMount(async () => {
-    // TODO: create key mapper -> display icons, strip away meta words
     unlisten = await listen(KEY_EVENT, (event: KeyEvent) => {
-      // console.log("EVENT: ", event);
-      let clickedKey = event.payload.key;
-      // Remove meta words
-      if (clickedKey === "Escape") {
-        clickedKey = "Esc";
-      } else {
-        clickedKey = clickedKey.replace("Key", "").replace("Num", "");
-      }
-
-      // Caps
-      if (clickedKey === "CapsLock") {
-        if (event.payload.event_type === "KeyPress") {
-          setCapsLockStatus(true);
-        }
-        if (event.payload.event_type === "KeyRelease") {
-          setCapsLockStatus(false);
-        }
-        clickedKey = "⇪";
-      }
-
-      if (clickedKey === "Space") {
-        clickedKey = "␣";
-      }
-      if (clickedKey === "Backspace") {
-        clickedKey = "⌫";
-      }
-      if (clickedKey === "Return") {
-        clickedKey = "⏎";
-      }
+      const { key, event_type } = event.payload;
+      const clickedKey = handleClickedKey({
+        keyName: key,
+        eventType: event_type,
+      });
 
       const updatedKeys = keys();
-      if (updatedKeys.length > 3) {
+      if (updatedKeys.length > 5) {
         updatedKeys.pop();
       }
 
