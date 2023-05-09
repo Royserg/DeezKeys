@@ -1,4 +1,4 @@
-import { onMount } from "solid-js";
+import { Show, onMount } from "solid-js";
 
 // --- Move mouse on top of the application window ---
 // `mouseenter` will gets triggered to get status of CapsLock
@@ -32,9 +32,11 @@ export const Modifiers = () => {
 
   return (
     <div class="flex gap-2">
-      <div class="border-2 border-solid border-red-300 rounded-md p-2">
-        CapsLock: {isCapsOn() ? "ON" : "OFF"}
-      </div>
+      <Show when={isCapsOn()}>
+        <div class="border-2 border-solid border-red-300 rounded-md p-2">
+          CapsLock
+        </div>
+      </Show>
     </div>
   );
 };

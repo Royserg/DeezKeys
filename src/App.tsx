@@ -1,5 +1,5 @@
 import { UnlistenFn, listen } from "@tauri-apps/api/event";
-import { For, createSignal, onCleanup, onMount } from "solid-js";
+import { Component, For, createSignal, onCleanup, onMount } from "solid-js";
 import "./App.css";
 import { Modifiers } from "./components/modifiers";
 import { setCapsLockStatus } from "./stores/modifiers";
@@ -40,6 +40,17 @@ function App() {
         if (event.payload.event_type === "KeyRelease") {
           setCapsLockStatus(false);
         }
+        clickedKey = "⇪";
+      }
+
+      if (clickedKey === "Space") {
+        clickedKey = "␣";
+      }
+      if (clickedKey === "Backspace") {
+        clickedKey = "⌫";
+      }
+      if (clickedKey === "Return") {
+        clickedKey = "⏎";
       }
 
       const updatedKeys = keys();
@@ -59,11 +70,9 @@ function App() {
     <div class="container p-1">
       <Modifiers />
 
-      <div class="row">
+      <div class="flex flex-row-reverse">
         <For each={keys()}>
-          {(item, idx) => (
-            <span class={idx() === 0 ? "bigger" : ""}>{item} &nbsp;</span>
-          )}
+          {(item, idx) => <ClickedKey key={item}></ClickedKey>}
         </For>
       </div>
     </div>
@@ -71,3 +80,15 @@ function App() {
 }
 
 export default App;
+
+// -- ClickedKey
+interface ClickedKeyProps {
+  key: string;
+}
+const ClickedKey: Component<ClickedKeyProps> = (props) => {
+  return (
+    <div class="p-2 border-2 border-solid border-slate-300 rounded-md w-10 flex justify-center items-center">
+      {props.key}
+    </div>
+  );
+};
