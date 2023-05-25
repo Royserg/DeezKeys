@@ -70,7 +70,7 @@ const keyNameToSymbolMap: { [key: string]: string } = {
   KeyD: 'd',
   KeyE: 'e',
   KeyF: 'f',
-  keyG: 'g',
+  KeyG: 'g',
   KeyH: 'h',
   KeyI: 'i',
   KeyJ: 'j',
